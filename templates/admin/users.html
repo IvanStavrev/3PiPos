@@ -18,6 +18,19 @@
     </button>
 </div>
 
+<!-- Debug Info Panel -->
+<div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+    <h3 class="text-lg font-semibold text-yellow-800 mb-2">{{ translate('debug_info') }}</h3>
+    <div class="text-sm text-yellow-700">
+        <p><strong>Total Users:</strong> {{ users|length }}</p>
+        <p><strong>User IDs in Template:</strong> 
+            {% for user in users %}
+            <span class="bg-yellow-200 px-2 py-1 rounded mx-1">#{{ user.user_id }}</span>
+            {% endfor %}
+        </p>
+    </div>
+</div>
+
 <!-- Table view for larger screens -->
 <div class="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
     <div class="overflow-x-auto">
@@ -36,9 +49,12 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for user in users %}
                 <tr class="hover:bg-gray-50 transition duration-150">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.user_id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-bold text-blue-600">#{{ user.user_id }}</div>
+                        <div class="text-xs text-gray-500 mt-1">data-id="{{ user.user_id }}"</div>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.name }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.familyname }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.family_name }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.phone }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
@@ -55,13 +71,18 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex space-x-2">
                             <button data-user-id="{{ user.user_id }}" 
-                                    class="edit-user-btn text-yellow-600 hover:text-yellow-900 transition duration-150">
+                                    class="edit-user-btn text-yellow-600 hover:text-yellow-900 transition duration-150"
+                                    title="Edit User #{{ user.user_id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button data-user-id="{{ user.user_id }}" 
-                                    class="delete-user-btn text-red-600 hover:text-red-900 transition duration-150">
+                                    class="delete-user-btn text-red-600 hover:text-red-900 transition duration-150"
+                                    title="Delete User #{{ user.user_id }}">
                                 <i class="fas fa-trash"></i>
                             </button>
+                        </div>
+                        <div class="mt-1 text-xs text-gray-500 text-center">
+                        {{ translate('user_id') }}: {{ user.user_id }}
                         </div>
                     </td>
                 </tr>
@@ -74,11 +95,14 @@
 <!-- Card view for mobile and tablet -->
 <div class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
     {% for user in users %}
-    <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition duration-150">
+    <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition duration-150 border-2 border-blue-100">
         <div class="flex justify-between items-start mb-3">
             <div>
-                <h3 class="text-lg font-semibold text-gray-800">{{ user.name }} {{ user.familyname }}</h3>
-                <p class="text-sm text-gray-600">{{ translate('user_id') }}: {{ user.user_id }}</p>
+                <div class="flex items-center space-x-2 mb-2">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">#{{ user.user_id }}</span>
+                    <span class="text-xs text-gray-500">User ID</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">{{ user.name }} {{ user.family_name }}</h3>
             </div>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                         {% if user.role == 'admin' %}bg-red-100 text-red-800
@@ -100,15 +124,20 @@
             </div>
         </div>
         
-        <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
-            <button data-user-id="{{ user.user_id }}" 
-                    class="edit-user-btn bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition duration-150">
-                <i class="fas fa-edit mr-1"></i>{{ translate ('edit') }}
-            </button>
-            <button data-user-id="{{ user.user_id }}" 
-                    class="delete-user-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-150">
-                <i class="fas fa-trash mr-1"></i>{{ translate ('delete') }}
-            </button>
+        <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+            <div class="text-xs text-gray-500">
+                Button ID: <span class="font-mono bg-gray-100 px-1 rounded">{{ user.user_id }}</span>
+            </div>
+            <div class="flex space-x-2">
+                <button data-user-id="{{ user.user_id }}" 
+                        class="edit-user-btn bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition duration-150">
+                    <i class="fas fa-edit mr-1"></i>{{ translate ('edit') }}
+                </button>
+                <button data-user-id="{{ user.user_id }}" 
+                        class="delete-user-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-150">
+                    <i class="fas fa-trash mr-1"></i>{{ translate ('delete') }}
+                </button>
+            </div>
         </div>
     </div>
     {% endfor %}
@@ -128,7 +157,7 @@
 {% endif %}
 
 <!-- User Modal -->
-<div id="userModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+<div id="userModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
     <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <div class="flex justify-between items-center pb-3 border-b">
@@ -142,32 +171,39 @@
                 <input type="hidden" id="user_id" name="user_id">
                 
                 <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">{{ translate ('name') }}</label>
+                    <label for="name" class="block text-sm font-medium text-gray-700">{{ translate ('name') }} *</label>
                     <input type="text" id="name" name="name" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Enter first name">
+                    <div id="name_error" class="error-message mt-1 text-sm text-red-600 hidden"></div>
                 </div>
                 
                 <div>
-                    <label for="familyname" class="block text-sm font-medium text-gray-700">{{ translate ('family_name') }}</label>
-                    <input type="text" id="familyname" name="familyname" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <label for="family_name" class="block text-sm font-medium text-gray-700">{{ translate ('family_name') }} *</label>
+                    <input type="text" id="family_name" name="family_name" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Enter family name">
+                    <div id="family_name_error" class="error-message mt-1 text-sm text-red-600 hidden"></div>
                 </div>
                 
                 <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700">{{ translate ('phone') }}</label>
+                    <label for="phone" class="block text-sm font-medium text-gray-700">{{ translate ('phone') }} *</label>
                     <input type="tel" id="phone" name="phone" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="+1234567890">
+                    <div id="phone_error" class="error-message mt-1 text-sm text-red-600 hidden"></div>
                 </div>
                 
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">{{ translate ('password') }}</label>
+                    <label for="password" class="block text-sm font-medium text-gray-700">{{ translate ('password') }} <span id="password_required">*</span></label>
                     <input type="password" id="password" name="password"
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    <p class="mt-1 text-xs text-gray-500">{{ translate ('blank_pass') }}</p>
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="{{ translate('blank_pass') }}">
+                    <div id="password_error" class="error-message mt-1 text-sm text-red-600 hidden"></div>
                 </div>
                 
                 <div>
-                    <label for="role" class="block text-sm font-medium text-gray-700">{{ translate ('role') }}</label>
+                    <label for="role" class="block text-sm font-medium text-gray-700">{{ translate ('role') }} *</label>
                     <select id="role" name="role" required
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         <option value="">{{ translate ('select_role') }}</option>
@@ -176,6 +212,13 @@
                         <option value="bar">{{ translate ('role_bar') }}</option>
                         <option value="kitchen">{{ translate ('role_kitchen') }}</option>
                     </select>
+                    <div id="role_error" class="error-message mt-1 text-sm text-red-600 hidden"></div>
+                </div>
+
+                <!-- Validation Errors Container -->
+                <div id="form_errors" class="hidden bg-red-50 border border-red-200 rounded-md p-3">
+                    <h4 class="text-sm font-medium text-red-800 mb-2">{{ translate('validation_errors') }}</h4>
+                    <ul id="error_list" class="text-sm text-red-700 list-disc list-inside space-y-1"></ul>
                 </div>
             </form>
             
@@ -196,46 +239,262 @@
 
 {% block scripts %}
 <script>
+// Debug function to check user IDs and buttons
+function debugUserIDs() {
+    console.log('=== USER ID DEBUGGING ===');
+    
+    // Check all delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-user-btn');
+    console.log(`Found ${deleteButtons.length} delete buttons`);
+    
+    deleteButtons.forEach((button, index) => {
+        const userId = button.getAttribute('data-user-id');
+        console.log(`Delete Button ${index + 1}:`, {
+            userId: userId,
+            userIdType: typeof userId,
+            element: button,
+            outerHTML: button.outerHTML
+        });
+    });
+    
+    // Check all edit buttons
+    const editButtons = document.querySelectorAll('.edit-user-btn');
+    console.log(`Found ${editButtons.length} edit buttons`);
+    
+    editButtons.forEach((button, index) => {
+        const userId = button.getAttribute('data-user-id');
+        console.log(`Edit Button ${index + 1}:`, {
+            userId: userId,
+            userIdType: typeof userId
+        });
+    });
+    
+    console.log('========================');
+}
+
+// Validation functions
+function validateUserForm() {
+    const name = document.getElementById('name').value.trim();
+    const familyName = document.getElementById('family_name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const role = document.getElementById('role').value;
+    const isEdit = document.getElementById('user_id').value !== '';
+
+    const errors = [];
+    
+    // Clear previous errors
+    clearValidationErrors();
+    
+    // Name validation
+    if (!name) {
+        errors.push({ field: 'name', message: '{{ translate("name") }} {{ translate("required_field") }}' });
+    } else if (name.length < 2) {
+        errors.push({ field: 'name', message: '{{ translate("name") }} must be at least 2 characters' });
+    } else if (name.length > 50) {
+        errors.push({ field: 'name', message: '{{ translate("name") }} must be less than 50 characters' });
+    } else if (!/^[a-zA-Z\u0400-\u04FF\s]+$/.test(name)) {
+        errors.push({ field: 'name', message: '{{ translate("name") }} can only contain letters and spaces' });
+    }
+    
+    // Family name validation
+    if (!familyName) {
+        errors.push({ field: 'family_name', message: '{{ translate("family_name") }} {{ translate("required_field") }}' });
+    } else if (familyName.length < 2) {
+        errors.push({ field: 'family_name', message: '{{ translate("family_name") }} must be at least 2 characters' });
+    } else if (familyName.length > 50) {
+        errors.push({ field: 'family_name', message: '{{ translate("family_name") }} must be less than 50 characters' });
+    } else if (!/^[a-zA-Z\u0400-\u04FF\s]+$/.test(familyName)) {
+        errors.push({ field: 'family_name', message: '{{ translate("family_name") }} can only contain letters and spaces' });
+    }
+    
+    // Phone validation
+    if (!phone) {
+        errors.push({ field: 'phone', message: '{{ translate("phone") }} {{ translate("required_field") }}' });
+    } else if (!/^\+?[0-9\s\-\(\)]{10,}$/.test(phone)) {
+        errors.push({ field: 'phone', message: 'Please enter a valid phone number (minimum 10 digits)' });
+    }
+    
+    // Password validation (only for new users)
+    if (!isEdit && !password) {
+        errors.push({ field: 'password', message: '{{ translate("password") }} {{ translate("required_field") }}' });
+    } else if (password && password.length < 6) {
+        errors.push({ field: 'password', message: '{{ translate("password") }} must be at least 6 characters long' });
+    }
+    
+    // Role validation
+    if (!role) {
+        errors.push({ field: 'role', message: '{{ translate("role") }} {{ translate("required_field") }}' });
+    }
+    
+    // Show errors
+    if (errors.length > 0) {
+        showValidationErrors(errors);
+        return false;
+    }
+    
+    return true;
+}
+
+function showValidationErrors(errors) {
+    const formErrors = document.getElementById('form_errors');
+    const errorList = document.getElementById('error_list');
+    
+    // Clear previous errors
+    errorList.innerHTML = '';
+    
+    errors.forEach(error => {
+        const field = document.getElementById(error.field);
+        const errorElement = document.getElementById(`${error.field}_error`);
+        
+        // Add field styling
+        if (field) {
+            field.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+            field.classList.remove('border-gray-300', 'focus:ring-blue-500', 'focus:border-blue-500');
+        }
+        
+        // Add individual error message
+        if (errorElement) {
+            errorElement.textContent = error.message;
+            errorElement.classList.remove('hidden');
+        }
+        
+        // Add to form errors list
+        const li = document.createElement('li');
+        li.textContent = error.message;
+        errorList.appendChild(li);
+    });
+    
+    // Show form errors container
+    formErrors.classList.remove('hidden');
+    
+    // Scroll to first error
+    const firstErrorField = document.getElementById(errors[0].field);
+    if (firstErrorField) {
+        firstErrorField.focus();
+    }
+}
+
+function clearValidationErrors() {
+    // Clear field styles
+    document.querySelectorAll('input, select').forEach(field => {
+        field.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+        field.classList.add('border-gray-300', 'focus:ring-blue-500', 'focus:border-blue-500');
+    });
+    
+    // Clear error messages
+    document.querySelectorAll('.error-message').forEach(error => {
+        error.classList.add('hidden');
+        error.textContent = '';
+    });
+    
+    // Hide form errors container
+    document.getElementById('form_errors').classList.add('hidden');
+}
+
 // Modal functions
 function openCreateModal() {
     document.getElementById('userForm').reset();
     document.getElementById('modalTitle').textContent = '{{ translate("create_user") }}';
-    document.getElementById('password').required = true;
+    document.getElementById('password_required').textContent = '*';
+    document.getElementById('user_id').value = '';
+    clearValidationErrors();
     document.getElementById('userModal').classList.remove('hidden');
+    
+    // Focus on first field
+    setTimeout(() => {
+        document.getElementById('name').focus();
+    }, 100);
 }
 
 function closeModal() {
     document.getElementById('userModal').classList.add('hidden');
+    clearValidationErrors();
 }
 
 function editUser(userId) {
+    console.log('Editing user ID:', userId);
+    console.log('Fetching URL:', `/admin/users/edit/${userId}`);
+    
     fetch(`/admin/users/edit/${userId}`)
-        .then(response => response.json())
-        .then(user => {
-            document.getElementById('user_id').value = user.user_id;
-            document.getElementById('name').value = user.name;
-            document.getElementById('familyname').value = user.familyname;
-            document.getElementById('phone').value = user.phone;
-            document.getElementById('role').value = user.role;
-            document.getElementById('password').required = false;
-            document.getElementById('modalTitle').textContent = '{{ translate("edit_user") }}';
-            document.getElementById('userModal').classList.remove('hidden');
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Edit response data:', data);
+            if (data.success) {
+                const user = data.user;
+                console.log('User data received:', user);
+                
+                // Set the form values - FIXED: Make sure user_id is set
+                document.getElementById('user_id').value = user.id || user.user_id;
+                document.getElementById('name').value = user.name || '';
+                document.getElementById('family_name').value = user.family_name || '';
+                document.getElementById('phone').value = user.phone || '';
+                document.getElementById('role').value = user.role || '';
+                document.getElementById('password_required').textContent = '';
+                document.getElementById('modalTitle').textContent = '{{ translate("edit_user") }}';
+                
+                clearValidationErrors();
+                document.getElementById('userModal').classList.remove('hidden');
+                
+                console.log('Form populated with user ID:', document.getElementById('user_id').value);
+                
+                // Focus on first field
+                setTimeout(() => {
+                    document.getElementById('name').focus();
+                }, 100);
+            } else {
+                showError(data.message || '{{ translate("error_occurred") }}');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching user:', error);
+            showError('{{ translate("error_occurred") }}');
         });
 }
 
 function saveUser() {
+    if (!validateUserForm()) {
+        return;
+    }
+    
+    const saveBtn = document.getElementById('saveUserBtn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = '{{ translate("save") }}...';
+    saveBtn.disabled = true;
+    
     const formData = new FormData(document.getElementById('userForm'));
     
     const url = formData.get('user_id') ? 
         `/admin/users/edit/${formData.get('user_id')}` : 
         '/admin/users/create';
     
+    console.log('Saving user to URL:', url);
+    
     fetch(url, {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response OK:', response.ok);
+        
+        if (!response.ok) {
+            // Try to parse the error response as JSON
+            return response.json().then(errorData => {
+                throw new Error(JSON.stringify(errorData));
+            }).catch(() => {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
     .then(result => {
+        console.log('Save result:', result);
         if (result.success) {
             showSuccess(result.message || '{{ translate("operation_successful") }}');
             closeModal();
@@ -243,24 +502,108 @@ function saveUser() {
                 location.reload();
             }, 1500);
         } else {
-            showError(result.message || '{{ translate("error_occurred") }}');
+            // Handle server-side validation errors
+            if (result.errors && result.errors.length > 0) {
+                const errors = result.errors.map(error => ({ field: 'form', message: error }));
+                showValidationErrors(errors);
+            } else {
+                showError(result.message || '{{ translate("error_occurred") }}');
+            }
         }
+    })
+    .catch(error => {
+        console.error('Error saving user:', error);
+        
+        // Try to parse the error message as JSON to get server errors
+        try {
+            const errorData = JSON.parse(error.message);
+            if (errorData.errors && errorData.errors.length > 0) {
+                const errors = errorData.errors.map(errorMsg => ({ field: 'form', message: errorMsg }));
+                showValidationErrors(errors);
+                showError(errorData.message || '{{ translate("validation_errors") }}');
+            } else {
+                showError(errorData.message || '{{ translate("error_occurred") }}');
+            }
+        } catch (e) {
+            // If it's not JSON, show the raw error message
+            showError('{{ translate("error_occurred") }}: ' + error.message);
+        }
+    })
+    .finally(() => {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
     });
 }
 
-function deleteUser(userId) {  
+function deleteUser(userId) {
+    console.log('Deleting user ID:', userId);
+    console.log('URL:', `/admin/users/delete/${userId}`);
+    
+    if (!userId || userId === 'undefined' || userId === 'null') {
+        console.error('No valid user ID provided for deletion');
+        showError('No valid user ID provided for deletion');
+        return;
+    }
+    
+    // Convert to number to ensure it's valid
+    userId = parseInt(userId);
+    if (isNaN(userId)) {
+        console.error('Invalid user ID provided:', userId);
+        showError('Invalid user ID provided');
+        return;
+    }
+    
     fetch(`/admin/users/delete/${userId}`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Delete response status:', response.status);
+        console.log('Delete response OK:', response.ok);
+        
+        if (!response.ok) {
+            // Try to parse the error response as JSON
+            return response.json().then(errorData => {
+                throw new Error(JSON.stringify(errorData));
+            }).catch(() => {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
     .then(result => {
+        console.log('Delete result:', result);
         if (result.success) {
             showSuccess(result.message || '{{ translate("user_deleted_success") }}');
             setTimeout(() => {
                 location.reload();
             }, 1500);
         } else {
-            showError(result.message || '{{ translate("failed_to_delete") }} {{ translate("user") }}');
+            if (result.errors && result.errors.length > 0) {
+                showError(result.errors[0]);
+            } else {
+                showError(result.message || '{{ translate("failed_to_delete") }} {{ translate("user") }}');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting user:', error);
+        
+        // Try to parse the error message as JSON to get server errors
+        try {
+            const errorData = JSON.parse(error.message);
+            if (errorData.errors && errorData.errors.length > 0) {
+                showError(errorData.errors[0]);
+            } else if (errorData.message) {
+                showError(errorData.message);
+            } else {
+                showError('{{ translate("error_occurred") }}: ' + error.message);
+            }
+        } catch (e) {
+            // If it's not JSON, show the raw error message
+            showError('{{ translate("error_occurred") }}: ' + error.message);
         }
     });
 }
@@ -366,6 +709,7 @@ function confirmAction() {
 
 // Specific confirmation functions
 function confirmDeleteUser(userId) {
+    console.log('Confirming deletion of user ID:', userId);
     showConfirmation(
         '{{ translate("delete_confirm").format(translate("user")) }}',
         '{{ translate("delete_user") }}',
@@ -373,25 +717,12 @@ function confirmDeleteUser(userId) {
     );
 }
 
-function confirmDeleteTable(tableId) {
-    showConfirmation(
-        '{{ translate("delete_confirm").format(translate("table")) }}',
-        '{{ translate("delete_table") }}',
-        () => deleteTable(tableId)
-    );
-}
-
-function confirmFreeTable(tableId) {
-    showConfirmation(
-        '{{ translate("free_table_confirm") }}',
-        '{{ translate("free_table") }}',
-        () => freeTable(tableId)
-    );
-}
-
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Create user buttons - check if elements exist first
+    // Run debug first
+    debugUserIDs();
+    
+    // Create user buttons
     const createUserBtn = document.getElementById('createUserBtn');
     const createUserBtnEmpty = document.getElementById('createUserBtnEmpty');
     
@@ -421,18 +752,21 @@ document.addEventListener('DOMContentLoaded', function() {
         saveUserBtn.addEventListener('click', saveUser);
     }
     
-    // Edit user buttons (both table and card views)
+    // Edit user buttons
     document.querySelectorAll('.edit-user-btn').forEach(button => {
         button.addEventListener('click', function() {
             const userId = this.getAttribute('data-user-id');
+            console.log('Edit button clicked for user ID:', userId);
             editUser(userId);
         });
     });
     
-    // Delete user buttons (both table and card views)
+    // Delete user buttons
     document.querySelectorAll('.delete-user-btn').forEach(button => {
         button.addEventListener('click', function() {
             const userId = this.getAttribute('data-user-id');
+            console.log('Delete button clicked for user ID:', userId);
+            console.log('Button element:', this);
             confirmDeleteUser(userId);
         });
     });
@@ -446,6 +780,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Real-time validation on input
+    document.querySelectorAll('#userForm input, #userForm select').forEach(field => {
+        field.addEventListener('blur', function() {
+            const fieldName = this.id;
+            const value = this.value.trim();
+            
+            // Basic validation for the field
+            if (this.hasAttribute('required') && !value) {
+                this.classList.add('border-red-500');
+            } else {
+                this.classList.remove('border-red-500');
+            }
+        });
+
+        field.addEventListener('input', function() {
+            // Clear individual field error when user starts typing
+            const errorElement = document.getElementById(`${this.id}_error`);
+            if (errorElement) {
+                errorElement.classList.add('hidden');
+            }
+            this.classList.remove('border-red-500');
+        });
+    });
 
     // Confirmation modal buttons
     const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');

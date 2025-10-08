@@ -64,11 +64,11 @@ translations = {
         'category_name': 'Category Name',
         'updated': 'Updated',
         'category_name_placeholder': 'e.g., Appetizers, Main Courses, Drinks',
-    'category_name_unique': 'Category name must be unique',
-    'category_name_required': 'Please enter a category name',
-    'error_loading_category': 'Failed to load category data. Please try again.',
-    'error_saving_category': 'Failed to save category. Please try again.',
-    'error_deleting_category': 'Failed to delete category. Please try again.',
+        'category_name_unique': 'Category name must be unique',
+        'category_name_required': 'Please enter a category name',
+        'error_loading_category': 'Failed to load category data. Please try again.',
+        'error_saving_category': 'Failed to save category. Please try again.',
+        'error_deleting_category': 'Failed to delete category. Please try again.',
 
         # Messages
         'welcome': 'Welcome, {}',
@@ -129,6 +129,15 @@ translations = {
         'confirm_action': 'Confirm Action',
         'confirm_action_message': 'Are you sure you want to perform this action?',
         'menu': 'Menu',
+
+        # ... existing translations ...
+        'validation_errors': 'Please fix the following errors:',
+        'phone_exists': 'Phone number already exists',
+        'invalid_phone': 'Please enter a valid phone number',
+        'min_chars': 'Must be at least {} characters',
+        'max_chars': 'Must be less than {} characters',
+        'letters_only': 'Can only contain letters and spaces',
+        'debug_info': 'Debug Information',
     },
     
     'bg': {
@@ -196,11 +205,11 @@ translations = {
         'category_name': 'Име на категория',
         'updated': 'Обновен',
         'category_name_placeholder': 'напр., Предястия, Основни ястия, Напитки',
-    'category_name_unique': 'Името на категорията трябва да е уникално',
-    'category_name_required': 'Моля, въведете име на категория',
-    'error_loading_category': 'Неуспешно зареждане на данните за категорията. Моля, опитайте отново.',
-    'error_saving_category': 'Неуспешно запазване на категорията. Моля, опитайте отново.',
-    'error_deleting_category': 'Неуспешно изтриване на категорията. Моля, опитайте отново.',
+        'category_name_unique': 'Името на категорията трябва да е уникално',
+        'category_name_required': 'Моля, въведете име на категория',
+        'error_loading_category': 'Неуспешно зареждане на данните за категорията. Моля, опитайте отново.',
+        'error_saving_category': 'Неуспешно запазване на категорията. Моля, опитайте отново.',
+        'error_deleting_category': 'Неуспешно изтриване на категорията. Моля, опитайте отново.',
         
         # Messages
         'welcome': 'Добре дошли, {}',
@@ -261,5 +270,14 @@ translations = {
         'confirm_action': 'Потвърдете действие',
         'confirm_action_message': 'Сигурни ли сте, че искате да изпълните това действие?',
         'menu': 'Меню',
+
+        # ... existing translations ...
+        'validation_errors': 'Моля, поправете следните грешки:',
+        'phone_exists': 'Телефонният номер вече съществува',
+        'invalid_phone': 'Моля, въведете валиден телефонен номер',
+        'min_chars': 'Трябва да бъде поне {} символа',
+        'max_chars': 'Трябва да бъде по-малко от {} символа',
+        'letters_only': 'Може да съдържа само букви и интервали',
+        'debug_info': 'Информация за отстраняване на грешки',
     }
 }
