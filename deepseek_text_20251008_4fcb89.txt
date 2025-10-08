@@ -1,0 +1,25 @@
+3pipos/
+├── app/
+│   ├── __init__.py
+│   ├── config/
+│   │   ├── __init__.py
+│   │   └── database.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── user.py
+│   ├── controllers/
+│   ├── routes/
+│   └── utils/
+├── static/
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── templates/
+├── uploads/
+├── logs/
+├── tests/
+├── main.py
+├── requirements.txt
+├── .env.example
+├── .gitignore
+└── README.md
