@@ -1,0 +1,643 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-4 p-4 bg-white rounded-lg shadow flex justify-between items-center">
+    <div>
+        <h2 class="text-lg font-semibold text-gray-800">{{ translate('welcome', user_name) }}</h2>
+        <p class="text-sm text-gray-600">{{ translate('role') }}: <span class="font-medium capitalize">{{ translate('role_' + session.user_role) }}</span></p>
+    </div>
+</div>
+
+<div class="mb-6 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-gray-800">{{ translate('table_management') }}</h1>
+    <button id="createTableBtn" 
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition duration-200">
+        <i class="fas fa-plus"></i>
+        <span class="hidden sm:inline">{{ translate('add_table') }}</span>
+    </button>
+</div>
+
+<!-- Table view for larger screens -->
+<div class="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('user_id') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('table_name') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('table_seats') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('table_status') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('reserved_by') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('reservation_note') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('created') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('actions') }}</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for table in tables %}
+                <tr class="hover:bg-gray-50 transition duration-150">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ table.id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ table.table_name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ table.table_seats }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if table.table_status == 'free' %}bg-green-100 text-green-800
+                                    {% elif table.table_status == 'occupied' %}bg-red-100 text-red-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ translate('status_' + table.table_status) }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ table.reservedby_name or '-' }}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                        {{ table.table_reservationnote or '-' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ table.created_at.strftime('%Y-%m-%d %H:%M') if table.created_at }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button data-table-id="{{ table.id }}" 
+                                    class="edit-table-btn text-yellow-600 hover:text-yellow-900 transition duration-150">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            {% if table.table_status == 'free' %}
+                            <button data-table-id="{{ table.id }}" 
+                                    class="reserve-table-btn text-blue-600 hover:text-blue-900 transition duration-150">
+                                <i class="fas fa-calendar-plus"></i>
+                            </button>
+                            {% elif table.table_status != 'free' %}
+                            <button data-table-id="{{ table.id }}" 
+                                    class="free-table-btn text-green-600 hover:text-green-900 transition duration-150">
+                                <i class="fas fa-check-circle"></i>
+                            </button>
+                            {% endif %}
+                            <button data-table-id="{{ table.id }}" 
+                                    class="delete-table-btn text-red-600 hover:text-red-900 transition duration-150">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Card view for mobile and tablet -->
+<div class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for table in tables %}
+    <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition duration-150">
+        <div class="flex justify-between items-start mb-3">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800">{{ table.table_name }}</h3>
+                <p class="text-sm text-gray-600">{{ translate('user_id') }}: {{ table.id }} | {{ translate('table_seats') }}: {{ table.table_seats }}</p>
+            </div>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                        {% if table.table_status == 'free' %}bg-green-100 text-green-800
+                        {% elif table.table_status == 'occupied' %}bg-red-100 text-red-800
+                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                {{ translate('status_' + table.table_status) }}
+            </span>
+        </div>
+        
+        <div class="space-y-2 mb-4">
+            <div class="flex items-center text-sm text-gray-600">
+                <i class="fas fa-user mr-2 text-gray-400"></i>
+                <span>{{ translate('reserved_by') }}: {{ table.reservedby_name or 'None' }}</span>
+            </div>
+            {% if table.table_reservationnote %}
+            <div class="flex items-start text-sm text-gray-600">
+                <i class="fas fa-sticky-note mr-2 text-gray-400 mt-0.5"></i>
+                <span class="break-words">{{ table.table_reservationnote }}</span>
+            </div>
+            {% endif %}
+            <div class="flex items-center text-sm text-gray-600">
+                <i class="fas fa-calendar mr-2 text-gray-400"></i>
+                <span>{{ translate('created') }}: {{ table.created_at.strftime('%Y-%m-%d %H:%M') if table.created_at }}</span>
+            </div>
+        </div>
+        
+        <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+            <button data-table-id="{{ table.id }}" 
+                    class="edit-table-btn bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition duration-150">
+                <i class="fas fa-edit mr-1"></i>{{ translate('edit') }}
+            </button>
+            {% if table.table_status == 'free' %}
+            <button data-table-id="{{ table.id }}" 
+                    class="reserve-table-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition duration-150">
+                <i class="fas fa-calendar-plus mr-1"></i>{{ translate('reserve_table') }}
+            </button>
+            {% elif table.table_status != 'free' %}
+            <button data-table-id="{{ table.id }}" 
+                    class="free-table-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition duration-150">
+                <i class="fas fa-check-circle mr-1"></i>{{ translate('free_table') }}
+            </button>
+            {% endif %}
+            <button data-table-id="{{ table.id }}" 
+                    class="delete-table-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-150">
+                <i class="fas fa-trash mr-1"></i>{{ translate('delete') }}
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Empty state -->
+{% if not tables %}
+<div class="bg-white rounded-lg shadow p-8 text-center">
+    <i class="fas fa-table text-gray-300 text-4xl mb-4"></i>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ translate('no_tables') }}</h3>
+    <p class="text-gray-500 mb-4">{{ translate('create_first_table') }}</p>
+    <button id="createTableBtnEmpty" 
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-200">
+        <i class="fas fa-plus mr-2"></i>{{ translate('add_table') }}
+    </button>
+</div>
+{% endif %}
+
+<!-- Table Modal -->
+<div id="tableModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 class="text-lg font-medium text-gray-900" id="modalTableTitle">{{ translate('create_table') }}</h3>
+                <button id="closeTableModalBtn" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="tableForm" class="mt-4 space-y-4">
+                <input type="hidden" id="table_id" name="table_id">
+                
+                <div>
+                    <label for="table_name" class="block text-sm font-medium text-gray-700">{{ translate('table_name') }} *</label>
+                    <input type="text" id="table_name" name="table_name" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="e.g., Table 1, VIP A">
+                </div>
+                
+                <div>
+                    <label for="table_seats" class="block text-sm font-medium text-gray-700">{{ translate('table_seats') }} *</label>
+                    <input type="number" id="table_seats" name="table_seats" min="1" max="20" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="e.g., 4">
+                </div>
+                
+                <div>
+                    <label for="table_status" class="block text-sm font-medium text-gray-700">{{ translate('table_status') }}</label>
+                    <select id="table_status" name="table_status"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="free">{{ translate('status_free') }}</option>
+                        <option value="occupied">{{ translate('status_occupied') }}</option>
+                        <option value="reserved">{{ translate('status_reserved') }}</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="table_reservationnote" class="block text-sm font-medium text-gray-700">{{ translate('reservation_note') }}</label>
+                    <textarea id="table_reservationnote" name="table_reservationnote" rows="3"
+                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="{{ translate('optional_reservation_notes') }}"></textarea>
+                </div>
+            </form>
+            
+            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                <button id="cancelTableModalBtn" 
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition duration-150">
+                    {{ translate('cancel') }}
+                </button>
+                <button id="saveTableBtn" 
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition duration-150">
+                    {{ translate('save') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reserve Modal -->
+<div id="reserveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 class="text-lg font-medium text-gray-900">{{ translate('reserve_table') }}</h3>
+                <button id="closeReserveModalBtn" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="reserveForm" class="mt-4 space-y-4">
+                <input type="hidden" id="reserve_table_id" name="table_id">
+                
+                <div>
+                    <label for="reserve_note" class="block text-sm font-medium text-gray-700">
+                        {{ translate('reservation_note') }} *
+                    </label>
+                    <textarea id="reserve_note" name="note" rows="3" required
+                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="{{ translate('enter_reservation_details') }}"></textarea>
+                    <p class="mt-1 text-xs text-gray-500">{{ translate('reserve_note_required') }}</p>
+                </div>
+            </form>
+            
+            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                <button id="cancelReserveModalBtn" 
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition duration-150">
+                    {{ translate('cancel') }}
+                </button>
+                <button id="confirmReserveBtn" 
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition duration-150">
+                    {{ translate('reserve_table') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Table Modal functions
+function openCreateTableModal() {
+    document.getElementById('tableForm').reset();
+    document.getElementById('modalTableTitle').textContent = '{{ translate("create_table") }}';
+    document.getElementById('tableModal').classList.remove('hidden');
+}
+
+function closeTableModal() {
+    document.getElementById('tableModal').classList.add('hidden');
+}
+
+function editTable(tableId) {
+    fetch(`/admin/tables/edit/${tableId}`)
+        .then(response => response.json())
+        .then(table => {
+            document.getElementById('table_id').value = table.id;
+            document.getElementById('table_name').value = table.table_name;
+            document.getElementById('table_seats').value = table.table_seats;
+            document.getElementById('table_status').value = table.table_status;
+            document.getElementById('table_reservationnote').value = table.table_reservationnote;
+            document.getElementById('modalTableTitle').textContent = '{{ translate("edit_table") }}';
+            document.getElementById('tableModal').classList.remove('hidden');
+        });
+}
+
+function saveTable() {
+    const formData = new FormData(document.getElementById('tableForm'));
+    
+    const url = formData.get('table_id') ? 
+        `/admin/tables/edit/${formData.get('table_id')}` : 
+        '/admin/tables/create';
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showSuccess(result.message || '{{ translate("table_created_success") }}');
+            closeTableModal();
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showError(result.message || '{{ translate("failed_to_save") }} {{ translate("table") }}');
+        }
+    });
+}
+
+function deleteTable(tableId) {
+    fetch(`/admin/tables/delete/${tableId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showSuccess(result.message || '{{ translate("table_deleted_success") }}');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showError(result.message || '{{ translate("failed_to_delete") }} {{ translate("table") }}');
+        }
+    });
+}
+
+// Reserve Modal functions
+function openReserveModal(tableId) {
+    document.getElementById('reserveForm').reset();
+    document.getElementById('reserve_table_id').value = tableId;
+    document.getElementById('reserveModal').classList.remove('hidden');
+    // Focus on the note field when modal opens
+    setTimeout(() => {
+        document.getElementById('reserve_note').focus();
+    }, 100);
+}
+
+function closeReserveModal() {
+    document.getElementById('reserveModal').classList.add('hidden');
+}
+
+function reserveTable() {
+    const noteField = document.getElementById('reserve_note');
+    const noteValue = noteField.value.trim();
+    
+    // Client-side validation
+    if (!noteValue) {
+        showError('{{ translate("reserve_note_required") }}');
+        noteField.focus();
+        return;
+    }
+    
+    const formData = new FormData(document.getElementById('reserveForm'));
+    const tableId = formData.get('table_id');
+    
+    fetch(`/admin/tables/reserve/${tableId}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showSuccess(result.message || '{{ translate("table_reserved_success") }}');
+            closeReserveModal();
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showError(result.message || '{{ translate("failed_to_reserve") }} {{ translate("table") }}');
+        }
+    });
+}
+
+function freeTable(tableId) {
+    fetch(`/admin/tables/free/${tableId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showSuccess(result.message || '{{ translate("table_freed_success") }}');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showError(result.message || '{{ translate("failed_to_free") }} {{ translate("table") }}');
+        }
+    });
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notificationContainer');
+    const notificationId = 'notification-' + Date.now();
+    
+    const bgColor = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    }[type];
+    
+    const icon = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    }[type];
+    
+    const notification = document.createElement('div');
+    notification.id = notificationId;
+    notification.className = `${bgColor} text-white p-4 rounded-lg shadow-lg notification-slide-in flex items-center justify-between`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${icon} mr-3"></i>
+            <span>${message}</span>
+        </div>
+        <button onclick="closeNotification('${notificationId}')" class="ml-4 text-white hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        closeNotification(notificationId);
+    }, 5000);
+}
+
+function closeNotification(notificationId) {
+    const notification = document.getElementById(notificationId);
+    if (notification) {
+        notification.classList.remove('notification-slide-in');
+        notification.classList.add('notification-slide-out');
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }
+}
+
+// Success and error shortcuts
+function showSuccess(message) {
+    showNotification(message, 'success');
+}
+
+function showError(message) {
+    showNotification(message, 'error');
+}
+
+function showWarning(message) {
+    showNotification(message, 'warning');
+}
+
+function showInfo(message) {
+    showNotification(message, 'info');
+}
+
+// Confirmation system
+let currentConfirmationCallback = null;
+
+function showConfirmation(message, title = '{{ translate("confirm_action") }}', confirmCallback) {
+    const modal = document.getElementById('confirmationModal');
+    const titleElement = document.getElementById('confirmationTitle');
+    const messageElement = document.getElementById('confirmationMessage');
+    
+    titleElement.textContent = title;
+    messageElement.textContent = message;
+    currentConfirmationCallback = confirmCallback;
+    
+    modal.classList.remove('hidden');
+}
+
+function closeConfirmation() {
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.add('hidden');
+    currentConfirmationCallback = null;
+}
+
+function confirmAction() {
+    if (currentConfirmationCallback) {
+        currentConfirmationCallback();
+    }
+    closeConfirmation();
+}
+
+// Specific confirmation functions
+function confirmDeleteUser(userId) {
+    showConfirmation(
+        '{{ translate("delete_confirm").format(translate("user")) }}',
+        '{{ translate("delete_user") }}',
+        () => deleteUser(userId)
+    );
+}
+
+function confirmDeleteTable(tableId) {
+    showConfirmation(
+        '{{ translate("delete_confirm").format(translate("table")) }}',
+        '{{ translate("delete_table") }}',
+        () => deleteTable(tableId)
+    );
+}
+
+function confirmFreeTable(tableId) {
+    showConfirmation(
+        '{{ translate("free_table_confirm") }}',
+        '{{ translate("free_table") }}',
+        () => freeTable(tableId)
+    );
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Create table buttons - check if elements exist first
+    const createTableBtn = document.getElementById('createTableBtn');
+    const createTableBtnEmpty = document.getElementById('createTableBtnEmpty');
+    
+    if (createTableBtn) {
+        createTableBtn.addEventListener('click', openCreateTableModal);
+    }
+    
+    if (createTableBtnEmpty) {
+        createTableBtnEmpty.addEventListener('click', openCreateTableModal);
+    }
+    
+    // Close table modal buttons
+    const closeTableModalBtn = document.getElementById('closeTableModalBtn');
+    const cancelTableModalBtn = document.getElementById('cancelTableModalBtn');
+    
+    if (closeTableModalBtn) {
+        closeTableModalBtn.addEventListener('click', closeTableModal);
+    }
+    
+    if (cancelTableModalBtn) {
+        cancelTableModalBtn.addEventListener('click', closeTableModal);
+    }
+    
+    // Save table button
+    const saveTableBtn = document.getElementById('saveTableBtn');
+    if (saveTableBtn) {
+        saveTableBtn.addEventListener('click', saveTable);
+    }
+    
+    // Edit table buttons
+    document.querySelectorAll('.edit-table-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const tableId = this.getAttribute('data-table-id');
+            editTable(tableId);
+        });
+    });
+    
+    // Reserve table buttons
+    document.querySelectorAll('.reserve-table-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const tableId = this.getAttribute('data-table-id');
+            openReserveModal(tableId);
+        });
+    });
+    
+    // Free table buttons
+    document.querySelectorAll('.free-table-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const tableId = this.getAttribute('data-table-id');
+            confirmFreeTable(tableId);
+        });
+    });
+    
+    // Delete table buttons
+    document.querySelectorAll('.delete-table-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const tableId = this.getAttribute('data-table-id');
+            confirmDeleteTable(tableId);
+        });
+    });
+    
+    // Reserve modal buttons
+    const closeReserveModalBtn = document.getElementById('closeReserveModalBtn');
+    const cancelReserveModalBtn = document.getElementById('cancelReserveModalBtn');
+    const confirmReserveBtn = document.getElementById('confirmReserveBtn');
+    
+    if (closeReserveModalBtn) {
+        closeReserveModalBtn.addEventListener('click', closeReserveModal);
+    }
+    
+    if (cancelReserveModalBtn) {
+        cancelReserveModalBtn.addEventListener('click', closeReserveModal);
+    }
+    
+    if (confirmReserveBtn) {
+        confirmReserveBtn.addEventListener('click', reserveTable);
+    }
+    
+    // Close modals when clicking outside
+    const tableModal = document.getElementById('tableModal');
+    const reserveModal = document.getElementById('reserveModal');
+    
+    if (tableModal) {
+        tableModal.addEventListener('click', function(e) {
+            if (e.target.id === 'tableModal') {
+                closeTableModal();
+            }
+        });
+    }
+    
+    if (reserveModal) {
+        reserveModal.addEventListener('click', function(e) {
+            if (e.target.id === 'reserveModal') {
+                closeReserveModal();
+            }
+        });
+    }
+
+    // Confirmation modal buttons
+    const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+    const confirmActionBtn = document.getElementById('confirmActionBtn');
+
+    if (cancelConfirmBtn) {
+        cancelConfirmBtn.addEventListener('click', closeConfirmation);
+    }
+
+    if (confirmActionBtn) {
+        confirmActionBtn.addEventListener('click', confirmAction);
+    }
+
+    // Close confirmation modal when clicking outside
+    const confirmationModal = document.getElementById('confirmationModal');
+    if (confirmationModal) {
+        confirmationModal.addEventListener('click', function(e) {
+            if (e.target.id === 'confirmationModal') {
+                closeConfirmation();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

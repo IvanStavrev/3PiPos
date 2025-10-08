@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3PiPOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Hide the warning */
+        .tailwind-warning { display: none; }
+        
+        /* Notification animations */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .notification-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification-slide-out {
+            animation: slideOut 0.3s ease-in;
+        }
+
+        /* Mobile menu animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .mobile-menu-enter {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .mobile-menu-exit {
+            animation: fadeOut 0.2s ease-in;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="fixed top-4 right-4 z-50 space-y-2 max-w-sm"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900" id="confirmationTitle">{{ translate('confirm_action') }}</h3>
+                <div class="mt-2 px-4">
+                    <p class="text-sm text-gray-500" id="confirmationMessage">{{ translate('confirm_action_message') }}</p>
+                </div>
+                <div class="flex justify-center space-x-3 mt-6 pt-4 border-t">
+                    <button id="cancelConfirmBtn" 
+                            class="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition duration-150">
+                        {{ translate('cancel') }}
+                    </button>
+                    <button id="confirmActionBtn" 
+                            class="px-6 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition duration-150">
+                        {{ translate('confirm') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="lg:hidden fixed inset-0 bg-gray-800 bg-opacity-75 z-40 hidden">
+        <div class="fixed right-0 top-0 h-full w-64 bg-white shadow-lg mobile-menu-enter">
+            <div class="p-4 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-800">{{ translate('menu') }}</h2>
+                    <button id="closeMobileMenu" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4 space-y-3" id="mobileMenuContent">
+                <!-- Mobile menu items will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation - Only show if user is logged in -->
+    {% if session.logged_in %}
+    <nav class="bg-gray-800 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-xl font-bold">3PiPOS:</h1>
+                    <span class="text-xl text-gray-300" id="userRoleDisplay">
+                        {% if session.user_role %}
+                            {{ translate('role_' + session.user_role) }}
+                        {% else %}
+                            {{ translate('role_admin') }}
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-4" id="desktopNav">
+                    <!-- Navigation buttons will be populated by JavaScript -->
+                </div>
+
+                <!-- Right side - Language switcher and mobile menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Language Switcher - Only show when logged in -->
+                    {% if session.logged_in %}
+                    <div class="relative group">
+                        <button class="flex items-center space-x-1 text-gray-300 hover:text-white">
+                            <i class="fas fa-globe"></i>
+                            <span>{{ session.get('language', 'en')|upper }}</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="absolute hidden group-hover:block bg-white rounded-lg shadow-lg py-2 z-50 right-0">
+                            <a href="{{ url_for('set_language', lang='en') }}" class="block px-4 py-2 hover:bg-gray-100 text-gray-800">English</a>
+                            <a href="{{ url_for('set_language', lang='bg') }}" class="block px-4 py-2 hover:bg-gray-100 text-gray-800">Български</a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Mobile Menu Button -->
+                    <button id="mobileMenuButton" class="lg:hidden text-gray-300 hover:text-white">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.12.0/cdn.min.js"></script>
+    <script>
+        // Navigation configuration based on roles - using translated names
+        const navigationConfig = {
+            admin: [
+                { name: '{{ translate("users") }}', url: '/admin/users', icon: 'fas fa-users' },
+                { name: '{{ translate("tables") }}', url: '/admin/tables', icon: 'fas fa-table' },
+                { name: '{{ translate("categories") }}', url: '/admin/categories', icon: 'fas fa-tags' }
+            ],
+            waiter: [
+                { name: '{{ translate("orders") }}', url: '/waiter/orders', icon: 'fas fa-clipboard-list' },
+                { name: '{{ translate("tables") }}', url: '/waiter/tables', icon: 'fas fa-table' }
+            ],
+            bar: [
+                { name: '{{ translate("orders") }}', url: '/bar/orders', icon: 'fas fa-wine-glass' },
+                { name: '{{ translate("inventory") }}', url: '/bar/inventory', icon: 'fas fa-boxes' }
+            ],
+            kitchen: [
+                { name: '{{ translate("orders") }}', url: '/kitchen/orders', icon: 'fas fa-utensils' },
+                { name: '{{ translate("inventory") }}', url: '/kitchen/inventory', icon: 'fas fa-boxes' }
+            ]
+        };
+
+        // Get current role from session or default to admin
+        const currentRole = '{{ session.user_role }}' || 'admin';
+
+        // Initialize navigation only if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if session.logged_in %}
+            initializeNavigation();
+            setupMobileMenu();
+            {% endif %}
+        });
+
+        function initializeNavigation() {
+            const desktopNav = document.getElementById('desktopNav');
+            if (!desktopNav) return;
+            
+            const navItems = navigationConfig[currentRole] || navigationConfig.admin;
+
+            // Add navigation buttons
+            navItems.forEach(item => {
+                const button = document.createElement('a');
+                button.href = item.url;
+                button.className = 'bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center space-x-2';
+                button.innerHTML = `
+                    <i class="${item.icon}"></i>
+                    <span>${item.name}</span>
+                `;
+                desktopNav.appendChild(button);
+            });
+
+            // Add logout button
+            const logoutButton = document.createElement('a');
+            logoutButton.href = '/logout';
+            logoutButton.className = 'bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center space-x-2';
+            logoutButton.innerHTML = `
+                <i class="fas fa-sign-out-alt"></i>
+                <span>{{ translate('logout') }}</span>
+            `;
+            desktopNav.appendChild(logoutButton);
+        }
+
+        function setupMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const closeMobileMenu = document.getElementById('closeMobileMenu');
+            const mobileMenuContent = document.getElementById('mobileMenuContent');
+
+            if (!mobileMenuButton || !mobileMenu) return;
+
+            // Open mobile menu
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.remove('hidden');
+                populateMobileMenu();
+            });
+
+            // Close mobile menu
+            closeMobileMenu.addEventListener('click', function() {
+                mobileMenu.classList.add('hidden');
+            });
+
+            // Close mobile menu when clicking outside
+            mobileMenu.addEventListener('click', function(e) {
+                if (e.target.id === 'mobileMenu') {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+
+            function populateMobileMenu() {
+                if (!mobileMenuContent) return;
+                
+                mobileMenuContent.innerHTML = '';
+                const navItems = navigationConfig[currentRole] || navigationConfig.admin;
+
+                // Add navigation items
+                navItems.forEach(item => {
+                    const menuItem = document.createElement('a');
+                    menuItem.href = item.url;
+                    menuItem.className = 'flex items-center space-x-3 p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition duration-150';
+                    menuItem.innerHTML = `
+                        <i class="${item.icon} text-gray-500 w-5"></i>
+                        <span>${item.name}</span>
+                    `;
+                    mobileMenuContent.appendChild(menuItem);
+                });
+
+                // Add logout item
+                const logoutItem = document.createElement('a');
+                logoutItem.href = '/logout';
+                logoutItem.className = 'flex items-center space-x-3 p-3 text-red-600 hover:bg-red-50 rounded-lg transition duration-150 mt-4 border-t pt-4';
+                logoutItem.innerHTML = `
+                    <i class="fas fa-sign-out-alt w-5"></i>
+                    <span>{{ translate('logout') }}</span>
+                `;
+                mobileMenuContent.appendChild(logoutItem);
+            }
+        }
+
+        // Confirmation modal event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+            const confirmActionBtn = document.getElementById('confirmActionBtn');
+            const confirmationModal = document.getElementById('confirmationModal');
+
+            if (cancelConfirmBtn) {
+                cancelConfirmBtn.addEventListener('click', closeConfirmation);
+            }
+
+            if (confirmActionBtn) {
+                confirmActionBtn.addEventListener('click', confirmAction);
+            }
+
+            if (confirmationModal) {
+                confirmationModal.addEventListener('click', function(e) {
+                    if (e.target.id === 'confirmationModal') {
+                        closeConfirmation();
+                    }
+                });
+            }
+        });
+
+        // Confirmation system (if not already defined in child templates)
+        if (typeof currentConfirmationCallback === 'undefined') {
+            let currentConfirmationCallback = null;
+
+            function showConfirmation(message, title = '{{ translate("confirm_action") }}', confirmCallback) {
+                const modal = document.getElementById('confirmationModal');
+                const titleElement = document.getElementById('confirmationTitle');
+                const messageElement = document.getElementById('confirmationMessage');
+                
+                titleElement.textContent = title;
+                messageElement.textContent = message;
+                currentConfirmationCallback = confirmCallback;
+                
+                modal.classList.remove('hidden');
+            }
+
+            function closeConfirmation() {
+                const modal = document.getElementById('confirmationModal');
+                modal.classList.add('hidden');
+                currentConfirmationCallback = null;
+            }
+
+            function confirmAction() {
+                if (currentConfirmationCallback) {
+                    currentConfirmationCallback();
+                }
+                closeConfirmation();
+            }
+
+            // Make functions globally available
+            window.showConfirmation = showConfirmation;
+            window.closeConfirmation = closeConfirmation;
+            window.confirmAction = confirmAction;
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

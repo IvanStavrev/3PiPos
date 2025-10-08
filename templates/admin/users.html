@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-4 p-4 bg-white rounded-lg shadow flex justify-between items-center">
+    <div>
+        <h2 class="text-lg font-semibold text-gray-800">{{ translate('welcome', user_name) }}</h2>
+        <p class="text-sm text-gray-600">{{ translate('role') }}: <span class="font-medium capitalize">{{ translate('role_' + session.user_role) }}</span></p>
+    </div>
+</div>
+
+<div class="mb-6 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-gray-800">{{ translate('user_management') }}</h1>
+    <button id="createUserBtn" 
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition duration-200">
+        <i class="fas fa-plus"></i>
+        <span class="hidden sm:inline">{{ translate('add_user') }}</span>
+    </button>
+</div>
+
+<!-- Table view for larger screens -->
+<div class="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('user_id') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('name') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('family_name') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('phone') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('role') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('created') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ translate('actions') }}</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for user in users %}
+                <tr class="hover:bg-gray-50 transition duration-150">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.user_id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.familyname }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.phone }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if user.role == 'admin' %}bg-red-100 text-red-800
+                                    {% elif user.role == 'waiter' %}bg-blue-100 text-blue-800
+                                    {% elif user.role == 'bar' %}bg-green-100 text-green-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ translate('role_' + user.role) }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button data-user-id="{{ user.user_id }}" 
+                                    class="edit-user-btn text-yellow-600 hover:text-yellow-900 transition duration-150">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button data-user-id="{{ user.user_id }}" 
+                                    class="delete-user-btn text-red-600 hover:text-red-900 transition duration-150">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Card view for mobile and tablet -->
+<div class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for user in users %}
+    <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition duration-150">
+        <div class="flex justify-between items-start mb-3">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800">{{ user.name }} {{ user.familyname }}</h3>
+                <p class="text-sm text-gray-600">{{ translate('user_id') }}: {{ user.user_id }}</p>
+            </div>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                        {% if user.role == 'admin' %}bg-red-100 text-red-800
+                        {% elif user.role == 'waiter' %}bg-blue-100 text-blue-800
+                        {% elif user.role == 'bar' %}bg-green-100 text-green-800
+                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                {{ translate ('role_' + user.role) }}
+            </span>
+        </div>
+        
+        <div class="space-y-2 mb-4">
+            <div class="flex items-center text-sm text-gray-600">
+                <i class="fas fa-phone mr-2 text-gray-400"></i>
+                <span>{{ user.phone }}</span>
+            </div>
+            <div class="flex items-center text-sm text-gray-600">
+                <i class="fas fa-calendar mr-2 text-gray-400"></i>
+                <span>{{ translate ('created') }}: {{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at }}</span>
+            </div>
+        </div>
+        
+        <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
+            <button data-user-id="{{ user.user_id }}" 
+                    class="edit-user-btn bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition duration-150">
+                <i class="fas fa-edit mr-1"></i>{{ translate ('edit') }}
+            </button>
+            <button data-user-id="{{ user.user_id }}" 
+                    class="delete-user-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-150">
+                <i class="fas fa-trash mr-1"></i>{{ translate ('delete') }}
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Empty state -->
+{% if not users %}
+<div class="bg-white rounded-lg shadow p-8 text-center">
+    <i class="fas fa-users text-gray-300 text-4xl mb-4"></i>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ translate ('no_users') }}</h3>
+    <p class="text-gray-500 mb-4">{{ translate ('create_first_user') }}</p>
+    <button id="createUserBtnEmpty" 
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-200">
+        <i class="fas fa-plus mr-2"></i>{{ translate ('add_user') }}
+    </button>
+</div>
+{% endif %}
+
+<!-- User Modal -->
+<div id="userModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 class="text-lg font-medium text-gray-900" id="modalTitle">{{ translate ('create_user') }}</h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="userForm" class="mt-4 space-y-4">
+                <input type="hidden" id="user_id" name="user_id">
+                
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">{{ translate ('name') }}</label>
+                    <input type="text" id="name" name="name" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label for="familyname" class="block text-sm font-medium text-gray-700">{{ translate ('family_name') }}</label>
+                    <input type="text" id="familyname" name="familyname" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700">{{ translate ('phone') }}</label>
+                    <input type="tel" id="phone" name="phone" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">{{ translate ('password') }}</label>
+                    <input type="password" id="password" name="password"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <p class="mt-1 text-xs text-gray-500">{{ translate ('blank_pass') }}</p>
+                </div>
+                
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700">{{ translate ('role') }}</label>
+                    <select id="role" name="role" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">{{ translate ('select_role') }}</option>
+                        <option value="admin">{{ translate ('role_admin') }}</option>
+                        <option value="waiter">{{ translate ('role_waiter') }}</option>
+                        <option value="bar">{{ translate ('role_bar') }}</option>
+                        <option value="kitchen">{{ translate ('role_kitchen') }}</option>
+                    </select>
+                </div>
+            </form>
+            
+            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                <button id="cancelModalBtn" 
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition duration-150">
+                    {{ translate ('cancel') }}
+                </button>
+                <button id="saveUserBtn" 
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition duration-150">
+                    {{ translate ('save') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Modal functions
+function openCreateModal() {
+    document.getElementById('userForm').reset();
+    document.getElementById('modalTitle').textContent = '{{ translate("create_user") }}';
+    document.getElementById('password').required = true;
+    document.getElementById('userModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('userModal').classList.add('hidden');
+}
+
+function editUser(userId) {
+    fetch(`/admin/users/edit/${userId}`)
+        .then(response => response.json())
+        .then(user => {
+            document.getElementById('user_id').value = user.user_id;
+            document.getElementById('name').value = user.name;
+            document.getElementById('familyname').value = user.familyname;
+            document.getElementById('phone').value = user.phone;
+            document.getElementById('role').value = user.role;
+            document.getElementById('password').required = false;
+            document.getElementById('modalTitle').textContent = '{{ translate("edit_user") }}';
+            document.getElementById('userModal').classList.remove('hidden');
+        });
+}
+
+function saveUser() {
+    const formData = new FormData(document.getElementById('userForm'));
+    
+    const url = formData.get('user_id') ? 
+        `/admin/users/edit/${formData.get('user_id')}` : 
+        '/admin/users/create';
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showSuccess(result.message || '{{ translate("operation_successful") }}');
+            closeModal();
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showError(result.message || '{{ translate("error_occurred") }}');
+        }
+    });
+}
+
+function deleteUser(userId) {  
+    fetch(`/admin/users/delete/${userId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showSuccess(result.message || '{{ translate("user_deleted_success") }}');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showError(result.message || '{{ translate("failed_to_delete") }} {{ translate("user") }}');
+        }
+    });
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notificationContainer');
+    const notificationId = 'notification-' + Date.now();
+    
+    const bgColor = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    }[type];
+    
+    const icon = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    }[type];
+    
+    const notification = document.createElement('div');
+    notification.id = notificationId;
+    notification.className = `${bgColor} text-white p-4 rounded-lg shadow-lg notification-slide-in flex items-center justify-between`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${icon} mr-3"></i>
+            <span>${message}</span>
+        </div>
+        <button onclick="closeNotification('${notificationId}')" class="ml-4 text-white hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        closeNotification(notificationId);
+    }, 5000);
+}
+
+function closeNotification(notificationId) {
+    const notification = document.getElementById(notificationId);
+    if (notification) {
+        notification.classList.remove('notification-slide-in');
+        notification.classList.add('notification-slide-out');
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }
+}
+
+// Success and error shortcuts
+function showSuccess(message) {
+    showNotification(message, 'success');
+}
+
+function showError(message) {
+    showNotification(message, 'error');
+}
+
+function showWarning(message) {
+    showNotification(message, 'warning');
+}
+
+function showInfo(message) {
+    showNotification(message, 'info');
+}
+
+// Confirmation system
+let currentConfirmationCallback = null;
+
+function showConfirmation(message, title = '{{ translate("confirm") }}', confirmCallback) {
+    const modal = document.getElementById('confirmationModal');
+    const titleElement = document.getElementById('confirmationTitle');
+    const messageElement = document.getElementById('confirmationMessage');
+    
+    titleElement.textContent = title;
+    messageElement.textContent = message;
+    currentConfirmationCallback = confirmCallback;
+    
+    modal.classList.remove('hidden');
+}
+
+function closeConfirmation() {
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.add('hidden');
+    currentConfirmationCallback = null;
+}
+
+function confirmAction() {
+    if (currentConfirmationCallback) {
+        currentConfirmationCallback();
+    }
+    closeConfirmation();
+}
+
+// Specific confirmation functions
+function confirmDeleteUser(userId) {
+    showConfirmation(
+        '{{ translate("delete_confirm").format(translate("user")) }}',
+        '{{ translate("delete_user") }}',
+        () => deleteUser(userId)
+    );
+}
+
+function confirmDeleteTable(tableId) {
+    showConfirmation(
+        '{{ translate("delete_confirm").format(translate("table")) }}',
+        '{{ translate("delete_table") }}',
+        () => deleteTable(tableId)
+    );
+}
+
+function confirmFreeTable(tableId) {
+    showConfirmation(
+        '{{ translate("free_table_confirm") }}',
+        '{{ translate("free_table") }}',
+        () => freeTable(tableId)
+    );
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Create user buttons - check if elements exist first
+    const createUserBtn = document.getElementById('createUserBtn');
+    const createUserBtnEmpty = document.getElementById('createUserBtnEmpty');
+    
+    if (createUserBtn) {
+        createUserBtn.addEventListener('click', openCreateModal);
+    }
+    
+    if (createUserBtnEmpty) {
+        createUserBtnEmpty.addEventListener('click', openCreateModal);
+    }
+    
+    // Close modal buttons
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+    
+    if (cancelModalBtn) {
+        cancelModalBtn.addEventListener('click', closeModal);
+    }
+    
+    // Save user button
+    const saveUserBtn = document.getElementById('saveUserBtn');
+    if (saveUserBtn) {
+        saveUserBtn.addEventListener('click', saveUser);
+    }
+    
+    // Edit user buttons (both table and card views)
+    document.querySelectorAll('.edit-user-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            editUser(userId);
+        });
+    });
+    
+    // Delete user buttons (both table and card views)
+    document.querySelectorAll('.delete-user-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            confirmDeleteUser(userId);
+        });
+    });
+    
+    // Close modal when clicking outside
+    const userModal = document.getElementById('userModal');
+    if (userModal) {
+        userModal.addEventListener('click', function(e) {
+            if (e.target.id === 'userModal') {
+                closeModal();
+            }
+        });
+    }
+
+    // Confirmation modal buttons
+    const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+    const confirmActionBtn = document.getElementById('confirmActionBtn');
+
+    if (cancelConfirmBtn) {
+        cancelConfirmBtn.addEventListener('click', closeConfirmation);
+    }
+
+    if (confirmActionBtn) {
+        confirmActionBtn.addEventListener('click', confirmAction);
+    }
+
+    // Close confirmation modal when clicking outside
+    const confirmationModal = document.getElementById('confirmationModal');
+    if (confirmationModal) {
+        confirmationModal.addEventListener('click', function(e) {
+            if (e.target.id === 'confirmationModal') {
+                closeConfirmation();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
