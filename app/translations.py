@@ -33,6 +33,8 @@ translations = {
         'actions': 'Actions',
         'blank_pass': 'Leave blank to keep current password when editing',
         'select_role': 'Select role',
+        'enter_first_name': 'Enter first name',
+        'enter_family_name': 'Enter family name',
         
         # Table Management
         'table_management': 'Table Management',
@@ -138,6 +140,8 @@ translations = {
         'max_chars': 'Must be less than {} characters',
         'letters_only': 'Can only contain letters and spaces',
         'debug_info': 'Debug Information',
+        'total_users': 'Total Users',
+        'users_id_template': 'User IDs in Template',
     },
     
     'bg': {
@@ -174,6 +178,8 @@ translations = {
         'actions': 'Действия',
         'blank_pass': 'Оставете празно, за да запазите текущата парола при редактиране',
         'select_role': 'Изберете роля',
+        'enter_first_name': 'Въведете собствено име',
+        'enter_family_name': 'Въведете фамилно име', 
         
         # Table Management
         'table_management': 'Управление на маси',
@@ -279,5 +285,7 @@ translations = {
         'max_chars': 'Трябва да бъде по-малко от {} символа',
         'letters_only': 'Може да съдържа само букви и интервали',
         'debug_info': 'Информация за отстраняване на грешки',
+        'total_users': 'Общо потребители',
+        'users_id_template': 'Потребителски идентификатори в шаблона',
     }
 }
